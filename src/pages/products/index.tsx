@@ -26,7 +26,9 @@ const ProductsPage: NextPageWithLayout = () => {
   const [uploadImage, setUploadImage] = useState <string| null> (null);
   const [createProductDIalodOpen, setCreateProductDIalodOpen] = useState(false);
 
-  const { data: products, isLoading } = api.product.getproduct.useQuery();
+  const { data: products, isLoading } = api.product.getproduct.useQuery({
+    categoryId: "all",
+  });
 
   const { mutate: createProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {

@@ -26,7 +26,13 @@ const DashboardPage: NextPageWithLayout = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
 
-  const { data: products } = api.product.getproduct.useQuery();
+  const { data: products } = api.product.getproduct.useQuery({
+    categoryId: selectedCategory,
+  });
+  const { data: categories } = api.category.getCategories.useQuery();
+  const totalProduct = categories?.reduce((a,b) => {
+    return a + b._count.products;
+  }, 0)
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -82,15 +88,24 @@ const DashboardPage: NextPageWithLayout = () => {
         </div>
 
         <div className="flex space-x-4 overflow-x-auto pb-2">
-          {CATEGORIES.map((category) => (
-            <CategoryFilterCard
+          <CategoryFilterCard
+          key={"all"}
+          name={"All"}
+          isSelected={selectedCategory === "all"}
+          onClick={() => handleCategoryClick("all")}
+          productCount={totalProduct ?? 0}
+          />
+          {categories?.map((category) => {
+            return (
+              <CategoryFilterCard
               key={category.id}
               name={category.name}
-              productCount={category.count}
-              isSelected={selectedCategory === category.id}
+              isSelected={category.id === selectedCategory}
               onClick={() => handleCategoryClick(category.id)}
-            />
-          ))}
+              productCount={category._count.products}
+              />
+            )
+          })}
         </div>
 
         <div>

@@ -13,6 +13,7 @@ type AddToCartItem = Omit<CartItem, "quantity">
 interface CartState {
   items: CartItem[]
   addToCart: (newItem: AddToCartItem) => void;
+  clearCart: () => void;
 }
 
 //currying
@@ -50,4 +51,12 @@ export const useCartStore = create<CartState>()((set) => ({
         }
       })
     },
+    clearCart: () => {
+      set((currentState) => {
+        return {
+          ...currentState,
+          items: [],
+        };
+    });
+  },
 }))

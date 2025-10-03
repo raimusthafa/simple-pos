@@ -4,65 +4,50 @@ import {
   DashboardLayout,
   DashboardTitle,
 } from "@/components/layouts/DashboardLayout";
-import { OrderCard, type Order } from "@/components/OrderCard";
+import { OrderCard } from "@/components/OrderCard";
 import type { NextPageWithLayout } from "../_app";
 import type { ReactElement } from "react";
 import { useState } from "react";
+import { api } from "@/utils/api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StatusOrder } from "@prisma/client";
+import { toast } from "sonner";
+import { toRupiah } from "@/utils/toRupiah";
 
 const SalesPage: NextPageWithLayout = () => {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "ORD-001",
-      totalAmount: 45.99,
-      totalItems: 3,
-      status: "Processing"
-    },
-    {
-      id: "ORD-002",
-      totalAmount: 23.50,
-      totalItems: 2,
-      status: "Finished"
-    },
-    {
-      id: "ORD-003",
-      totalAmount: 67.25,
-      totalItems: 5,
-      status: "Processing"
-    },
-    {
-      id: "ORD-004",
-      totalAmount: 12.99,
-      totalItems: 1,
-      status: "Finished"
-    },
-    {
-      id: "ORD-005",
-      totalAmount: 89.75,
-      totalItems: 7,
-      status: "Processing"
-    },
-    {
-      id: "ORD-006",
-      totalAmount: 34.20,
-      totalItems: 4,
-      status: "Finished"
-    }
-  ]);
+  const [filterOrder, setFilterOrder] = useState<StatusOrder | "ALL">("ALL");
+
+  const apiUtils = api.useUtils();
+
+  const { data: salesReport } = api.order.getSalesReport.useQuery();
+
+  const { data: orders } = api.order.getOrders.useQuery({
+    status: filterOrder,
+  });
+
+  const { mutate: finishOrder, isPending: finishOrderIsPending, variables: finishOrderVariables } = 
+    api.order.finishOrder.useMutation({
+      onSuccess: async () => {
+        await apiUtils.order.getOrders.invalidate();
+        toast.success("Order finished successfully");
+      },
+    });
 
   const handleFinishOrder = (orderId: string) => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === orderId
-          ? { ...order, status: "Finished" as const }
-          : order
-      )
-    );
+    finishOrder({
+      orderId,
+    });
   };
+
+  const handleFilterChange = (value: StatusOrder | "ALL") => {
+    setFilterOrder(value);
+  }
+
 
   return (
     <>
       <DashboardHeader>
-        <DashboardTitle>Sales Dashboard</DashboardTitle>
+        <DashboardTitle>Sales Dashboard - {filterOrder} </DashboardTitle>
         <DashboardDescription>
           Track your sales performance and view analytics.
         </DashboardDescription>
@@ -71,29 +56,51 @@ const SalesPage: NextPageWithLayout = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
         <div className="rounded-lg border p-4 shadow-sm">
           <h3 className="text-lg font-medium">Total Revenue</h3>
-          <p className="mt-2 text-3xl font-bold">$0.00</p>
+          <p className="mt-2 text-3xl font-bold">{toRupiah(salesReport?.totalRevenue ?? 0)}</p>
         </div>
 
         <div className="rounded-lg border p-4 shadow-sm">
           <h3 className="text-lg font-medium">Ongoing Orders</h3>
-          <p className="mt-2 text-3xl font-bold">0</p>
+          <p className="mt-2 text-3xl font-bold">{salesReport?.totalOnGoingOrders ?? 0}</p>
         </div>
 
         <div className="rounded-lg border p-4 shadow-sm">
           <h3 className="text-lg font-medium">Completed Orders</h3>
-          <p className="mt-2 text-3xl font-bold">0</p>
+          <p className="mt-2 text-3xl font-bold">{salesReport?.totalCompletedOrders ?? 0}</p>
         </div>
       </div>
 
       <div className="rounded-lg border p-6">
-        <h3 className="text-lg font-medium mb-4">Orders</h3>
+        <div className="flex justify-between">
+          <h3 className="text-lg font-medium mb-4">Orders</h3>
+          <Select defaultValue="ALL" onValueChange={handleFilterChange}>
+            <SelectTrigger>
+              <SelectValue/>
+            </SelectTrigger>
+
+            <SelectContent align="end">
+              <SelectItem value="ALL">ALL</SelectItem>
+              {
+                Object.keys(StatusOrder).map((status) => (
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                ))
+              }
+            </SelectContent>
+          </Select>
+        </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {orders.map((order) => (
+          {orders?.map((order) => (
             <OrderCard
               key={order.id}
-              order={order}
               onFinishOrder={handleFinishOrder}
+              id={order.id}
+              status={order.status}
+              totalAmount={order.grandtotal}
+              totalItems={order._count.orderItems}
+              isFinishingOrder={
+                finishOrderIsPending && 
+                order.id === finishOrderVariables.orderId}
             />
           ))}
         </div>

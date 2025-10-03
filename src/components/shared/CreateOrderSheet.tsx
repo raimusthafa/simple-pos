@@ -87,7 +87,6 @@ export const CreateOrderSheet = ({
   const cartStore = useCartStore();
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentInfoLoading, setPaymentInfoLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const subtotal = cartStore.items.reduce((a, b) => {
     return a + b.price * b.quantity;
@@ -108,6 +107,7 @@ export const CreateOrderSheet = ({
     },
   });
 
+
   const handleCreateOrder = () => {
     createOrder({
       orderItems: cartStore.items.map((item) => {
@@ -125,8 +125,13 @@ export const CreateOrderSheet = ({
     // }, 3000);
   };
 
+
   const handleRefresh = () => {
-    setPaymentSuccess(true);
+    if (!createOrderResponse) return;
+
+    checkOrderPaymentStatus({
+      orderID: createOrderResponse?.order.id,
+    });
   };
 
   const handleSimulatePayment = () => {
@@ -138,6 +143,26 @@ export const CreateOrderSheet = ({
       orderId: createOrderResponse?.order.id,
     });
   }
+
+  const { 
+    mutate: checkOrderPaymentStatus,
+    data: orderPaid,
+    isPending: checkOrderPaymentStatusIsPending,
+    reset: resetCheckOrderPaymentStatus,
+   } = api.order.checkOrderPaymentStatus.useMutation({
+    onSuccess: (orderPaid) => {
+      if (orderPaid) {
+         cartStore.clearCart();
+         return;
+        }
+    }
+   });
+
+   const handleClosePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+    resetCheckOrderPaymentStatus();
+    onOpenChange(false);
+   }
 
   return (
     <>
@@ -211,11 +236,12 @@ export const CreateOrderSheet = ({
               </div>
             ) : (
               <>
-                <Button variant="link" onClick={handleRefresh}>
-                  Refresh
+              {!orderPaid &&(
+                <Button variant="link" onClick={handleRefresh} disabled={checkOrderPaymentStatusIsPending}>
+                  {checkOrderPaymentStatusIsPending ? "Checking..." : "Refresh Payment Status"}
                 </Button>
-
-                {!paymentSuccess ? (
+              )}
+                {!orderPaid ? (
                   <PaymentQRCode qrString={createOrderResponse?.qrString ?? ""} />
                 ) : (
                   <CheckCircle2 className="size-80 text-green-500" />
@@ -226,23 +252,27 @@ export const CreateOrderSheet = ({
                 <p className="text-muted-foreground text-sm">
                   Transaction ID: {createOrderResponse?.order.id}
                 </p>
+
+                {!orderPaid && (
                 <Button onClick={handleSimulatePayment} variant="destructive">
                   Simulate Payment
                 </Button>
+                )}
+
+                {orderPaid && <p className="font-medium text-green-600">Payment Successful!</p>}
               </>
             )}
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel asChild>
               <Button
                 disabled={paymentInfoLoading}
                 variant="outline"
                 className="w-full"
+                onClick={handleClosePaymentDialog}
               >
                 Done
               </Button>
-            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
