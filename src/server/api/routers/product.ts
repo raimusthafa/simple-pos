@@ -79,4 +79,71 @@ export const productRouter = createTRPCRouter({
       return data;
     }, 
   ),
+
+  deleteProduct: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      // First get the product to get its image URL and check if it's in any orders
+      const product = await db.product.findUnique({
+        where: { id: input.id },
+        select: { 
+          imageUrl: true,
+          orderItems: {
+            select: {
+              id: true
+            }
+          }
+        }
+      });
+
+      if (!product) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found"
+        });
+      }
+
+      // Check if product is used in any orders
+      if (product.orderItems.length > 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete product that is part of existing orders"
+        });
+      }
+
+      // Delete the product from the database
+      try {
+        await db.product.delete({
+          where: { id: input.id }
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete product. It might be referenced in existing orders."
+        });
+      }
+
+      // If product had an image, delete it from storage
+      if (product.imageUrl) {
+        try {
+          // Extract the path from the full URL
+          const path = product.imageUrl.split("/").slice(-2).join("/");
+          const { error } = await supabaseAdmin.storage
+            .from(Bucket.ProductImages)
+            .remove([path]);
+
+          if (error) {
+            console.error("Failed to delete image:", error);
+            // Don't throw here, as the product is already deleted
+          }
+        } catch (error) {
+          console.error("Failed to delete image:", error);
+          // Don't throw here, as the product is already deleted
+        }
+      }
+
+      return { success: true };
+    }),
 })

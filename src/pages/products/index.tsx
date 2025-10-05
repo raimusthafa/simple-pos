@@ -24,7 +24,9 @@ const ProductsPage: NextPageWithLayout = () => {
   const apiUtils = api.useUtils();
 
   const [uploadImage, setUploadImage] = useState <string| null> (null);
-  const [createProductDIalodOpen, setCreateProductDIalodOpen] = useState(false);
+  const [createProductDialogOpen, setCreateProductDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: products, isLoading } = api.product.getproduct.useQuery({
     categoryId: "all",
@@ -32,9 +34,20 @@ const ProductsPage: NextPageWithLayout = () => {
 
   const { mutate: createProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {
-      toast.success("succesfully create new product");
+      toast.success("Successfully created new product");
       await apiUtils.product.getproduct.invalidate();
-      setCreateProductDIalodOpen(false);
+      setCreateProductDialogOpen(false);
+    }
+  });
+
+  const { mutate: deleteProduct, isPending: isDeleting } = api.product.deleteProduct.useMutation({
+    onSuccess: async () => {
+      toast.success("Successfully deleted product");
+      await apiUtils.product.getproduct.invalidate();
+      setDeleteDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
   });
 
@@ -74,8 +87,8 @@ const ProductsPage: NextPageWithLayout = () => {
     </Button> */}
           </div>
           <AlertDialog 
-          open={createProductDIalodOpen} 
-          onOpenChange={setCreateProductDIalodOpen}
+          open={createProductDialogOpen} 
+          onOpenChange={setCreateProductDialogOpen}
           >
             <AlertDialogTrigger asChild>
               <Button>Add New Product</Button>
@@ -106,15 +119,48 @@ const ProductsPage: NextPageWithLayout = () => {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {products?.map((product) => {
             return <ProductCatalogCard
-            key ={product.id}
+            key={product.id}
             name={product.name}
             price={product.price}
             image={product.imageUrl ?? ""}
             category={product.category.name}
-
+            onEdit={() => {
+              setSelectedProduct(product.id);
+            }}
+            onDelete={() => {
+              setSelectedProduct(product.id);
+              setDeleteDialogOpen(true);
+            }}
             />;
           })}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+            <p className="text-muted-foreground text-sm">
+              This action cannot be undone. This will permanently delete the product
+              from your inventory.
+            </p>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button 
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={() => {
+                if (selectedProduct) {
+                  deleteProduct({ id: selectedProduct });
+                }
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
