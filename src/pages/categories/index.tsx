@@ -26,6 +26,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { NextPageWithLayout } from "../_app";
 import { api } from "@/utils/api";
+import { toast } from "sonner";
 
 const CategoriesPage: NextPageWithLayout = () => {
 
@@ -42,7 +43,7 @@ const CategoriesPage: NextPageWithLayout = () => {
     const { mutate: createCategory } = api.category.createCategory.useMutation({
       onSuccess: async () => {
         await apiUtils.category.getCategories.invalidate();
-        alert("Succesfully created a new category")
+        toast.success("Succesfully created a new category")
         setCreateCategoryDialogOpen(false)
         createCategoryForm.reset();
       }
@@ -51,7 +52,7 @@ const CategoriesPage: NextPageWithLayout = () => {
     const { mutate: deleteCategoryById } = api.category.deleteCategoryById.useMutation({
       onSuccess: async () => {
         await apiUtils.category.getCategories.invalidate();
-        alert("Succesfully deleted a category")
+        toast.success("Succesfully deleted a category")
         setCategoryToDelete(null);
       },
     });
@@ -59,7 +60,7 @@ const CategoriesPage: NextPageWithLayout = () => {
     const { mutate:   editCategory } = api.category.editCategory.useMutation({
       onSuccess: async () => {
         await apiUtils.category.getCategories.invalidate();
-        alert("Succesfully updated a category")
+        toast.success("Succesfully updated a category")
         editCategoryForm.reset();
         setCategoryToEdit(null);
         setEditCategoryDialogOpen(false);
