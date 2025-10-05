@@ -63,10 +63,7 @@ const DashboardPage: NextPageWithLayout = () => {
             <div className="flex space-x-2">
 
             <DashboardDescription>
-              Welcome to your Simple POS system dashboard.
-            </DashboardDescription>
-            <DashboardDescription>
-              {cartStore.items.length}
+              Welcome to your Simple POS system dashboard
             </DashboardDescription>
             </div>
           </div>
@@ -76,7 +73,7 @@ const DashboardPage: NextPageWithLayout = () => {
             className="animate-in slide-in-from-right"
             onClick={() => setOrderSheetOpen(true)}
           >
-            <ShoppingCart /> Cart
+            <ShoppingCart /> Cart ({cartStore.items.length})
           </Button>
           )}
         </div>
