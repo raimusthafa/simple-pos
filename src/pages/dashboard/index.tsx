@@ -14,6 +14,7 @@ import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
 import type { NextPageWithLayout } from "../_app";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { api } from "@/utils/api";
 import { useCartStore } from "@/store/cart";
 import { toast } from "sonner";
@@ -26,7 +27,7 @@ const DashboardPage: NextPageWithLayout = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
 
-  const { data: products } = api.product.getproduct.useQuery({
+  const { data: products, isLoading: productIsLoading } = api.product.getproduct.useQuery({
     categoryId: selectedCategory,
   });
   const { data: categories } = api.category.getCategories.useQuery();
@@ -120,8 +121,28 @@ const DashboardPage: NextPageWithLayout = () => {
           })}
         </div>
 
-        <div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div>            
+          {productIsLoading ? (
+        <div className="rounded-md border p-8 text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+          ) : !products || products?.length === 0 ? (
+                            <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <ShoppingCart className="w-6 h-6" />
+                  </EmptyMedia>
+                  <EmptyTitle>No products found</EmptyTitle>
+                  <EmptyDescription>Get started by creating your first product</EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button asChild>
+                    <a href="/products">Add Product</a>
+                  </Button>
+                </EmptyContent>
+              </Empty>
+              ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {products?.map((product) => (
                 <ProductMenuCard
                   key={product.id}
@@ -130,9 +151,10 @@ const DashboardPage: NextPageWithLayout = () => {
                   price={product.price}
                   imageUrl={product.imageUrl ?? "https://placehold.co/600x400"}
                   onAddToCart={handleAddToCart}
-                />
+                  />
               ))}
-            </div>
+              </div>
+            )}
 
         </div>
       </div>
