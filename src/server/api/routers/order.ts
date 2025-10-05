@@ -114,7 +114,7 @@ export const orderRouter = createTRPCRouter({
         paymentMethodId: order.paymentMethodId!,
         data: {
           amount: order.grandtotal,
-        },
+      },
       })
     }),
 
