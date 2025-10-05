@@ -60,12 +60,15 @@ const DashboardPage: NextPageWithLayout = () => {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <DashboardTitle>Dashboard POS </DashboardTitle>
+            <div className="flex space-x-2">
+
             <DashboardDescription>
               Welcome to your Simple POS system dashboard.
             </DashboardDescription>
             <DashboardDescription>
               {cartStore.items.length}
             </DashboardDescription>
+            </div>
           </div>
           {
             !!cartStore.items.length &&(
