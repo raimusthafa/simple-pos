@@ -80,6 +80,88 @@ export const productRouter = createTRPCRouter({
     }, 
   ),
 
+  getProductById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { db } = ctx;
+      const product = await db.product.findUnique({
+        where: { id: input.id },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          imageUrl: true,
+          categoryId: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+            }
+          }
+        }
+      });
+
+      if (!product) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found"
+        });
+      }
+
+      return product;
+    }),
+
+  updateProduct: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      name: z.string().min(3),
+      price: z.number().min(1000),
+      categoryId: z.string(),
+      imageUrl: z.string().url().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      // Check if product exists
+      const existingProduct = await db.product.findUnique({
+        where: { id: input.id },
+        select: { imageUrl: true }
+      });
+
+      if (!existingProduct) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found"
+        });
+      }
+
+      // If there's a new image and an old one exists, delete the old one
+      if (input.imageUrl && existingProduct.imageUrl && input.imageUrl !== existingProduct.imageUrl) {
+        try {
+          const oldPath = existingProduct.imageUrl.split("/").slice(-2).join("/");
+          await supabaseAdmin.storage
+            .from(Bucket.ProductImages)
+            .remove([oldPath]);
+        } catch (error) {
+          console.error("Failed to delete old image:", error);
+          // Continue with update even if image deletion fails
+        }
+      }
+
+      // Update the product
+      const updatedProduct = await db.product.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          price: input.price,
+          categoryId: input.categoryId,
+          ...(input.imageUrl && { imageUrl: input.imageUrl }),
+        },
+      });
+
+      return updatedProduct;
+    }),
+
   deleteProduct: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {

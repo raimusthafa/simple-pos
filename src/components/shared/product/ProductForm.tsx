@@ -13,9 +13,16 @@ import { toast } from "sonner";
 type ProductFormProps = {
     onSubmit: (values: productFormSchema) => void;
     onChangeImageUrl: (imageUrl: string) => void;
+    defaultImageUrl?: string;
+    submitButton?: React.ReactNode;
 }
 
-export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) => {
+export const ProductForm = ({ 
+    onSubmit, 
+    onChangeImageUrl,
+    defaultImageUrl,
+    submitButton 
+}: ProductFormProps) => {
     const form = useFormContext<productFormSchema>();
 
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
@@ -102,10 +109,20 @@ export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) =>
           </FormItem>
         )}
       />
-      <div className="space-y-1">
-        <Label>Product Iamge</Label>
+      <div className="space-y-2">
+        <Label>Product Image</Label>
+        {(defaultImageUrl || uploadedImageUrl) && (
+          <div className="relative h-40 w-full overflow-hidden rounded-md">
+            <img
+              src={uploadedImageUrl || defaultImageUrl}
+              alt="Product"
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )}
         <Input onChange={handleImageChange} type="file" accept="image/*"/>
       </div>
+      {submitButton}
         </form>
     )
 }

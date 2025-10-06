@@ -13,6 +13,7 @@ import { ProductCatalogCard } from "@/components/shared/product/ProductCatalogCa
 import { api } from "@/utils/api";
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ProductForm } from "@/components/shared/product/ProductForm";
+import { EditProductDialog } from "@/components/shared/product/EditProductDialog";
 import { Form } from "@/components/ui/form";
 import { productFormSchema } from "@/forms/product";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ const ProductsPage: NextPageWithLayout = () => {
   const [createProductDialogOpen, setCreateProductDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const { data: products, isLoading } = api.product.getproduct.useQuery({
     categoryId: "all",
@@ -126,6 +128,7 @@ const ProductsPage: NextPageWithLayout = () => {
             category={product.category.name}
             onEdit={() => {
               setSelectedProduct(product.id);
+              setEditDialogOpen(true);
             }}
             onDelete={() => {
               setSelectedProduct(product.id);
@@ -161,6 +164,12 @@ const ProductsPage: NextPageWithLayout = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EditProductDialog 
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        productId={selectedProduct}
+      />
     </>
   );
 };
