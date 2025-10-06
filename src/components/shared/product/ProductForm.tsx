@@ -1,12 +1,15 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Item, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import type { productFormSchema } from "@/forms/product";
 import { uploadFileToSignedUrl } from "@/lib/supabase";
 import { Bucket } from "@/server/bucket";
 import { api } from "@/utils/api";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { useFormContext } from "react-hook-form"
 import { toast } from "sonner";
 
@@ -26,8 +29,15 @@ export const ProductForm = ({
     const form = useFormContext<productFormSchema>();
 
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [isImageLoading, setIsImageLoading] = useState(true);
     const { data: categories } = api.category.getCategories.useQuery();
     const { mutateAsync: createImageSignedUrl } = api.product.createProductImageUploadSignedUrl.useMutation();
+
+    useEffect(() => {
+        if (defaultImageUrl) {
+            setIsImageLoading(true);
+        }
+    }, [defaultImageUrl]);
 
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -111,12 +121,16 @@ export const ProductForm = ({
       />
       <div className="space-y-2">
         <Label>Product Image</Label>
+         {isImageLoading && (
+          <Skeleton className="relative h-40 w-full overflow-hidden rounded-md"/>
+            )}
         {(defaultImageUrl || uploadedImageUrl) && (
           <div className="relative h-40 w-full overflow-hidden rounded-md">
             <img
               src={uploadedImageUrl || defaultImageUrl}
               alt="Product"
-              className="object-cover w-full h-full"
+              className={`object-cover w-full h-full ${isImageLoading ? 'invisible' : 'visible'}`}
+              onLoad={() => setIsImageLoading(false)}
             />
           </div>
         )}
