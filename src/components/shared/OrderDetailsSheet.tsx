@@ -138,7 +138,7 @@ export const OrderDetailsSheet = ({
             </>
           )}
 
-          <Button className="w-full" variant="destructive" onClick={onClose}>
+          <Button className="w-full"  onClick={onClose}>
             Close
           </Button>
         </div>
