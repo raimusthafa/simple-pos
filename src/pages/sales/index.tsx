@@ -12,10 +12,12 @@ import { api } from "@/utils/api";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusOrder } from "@prisma/client";
 import { toast } from "sonner";
+import { OrderDetailsSheet } from "@/components/shared/OrderDetailsSheet";
 import { toRupiah } from "@/utils/toRupiah";
 
 const SalesPage: NextPageWithLayout = () => {
   const [filterOrder, setFilterOrder] = useState<StatusOrder | "ALL">("ALL");
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const apiUtils = api.useUtils();
 
@@ -24,6 +26,13 @@ const SalesPage: NextPageWithLayout = () => {
   const { data: orders } = api.order.getOrders.useQuery({
     status: filterOrder,
   });
+
+  const { data: selectedOrder, isLoading: isLoadingDetails } = api.order.getOrderDetails.useQuery(
+    { orderId: selectedOrderId! },
+    { 
+      enabled: !!selectedOrderId,
+    }
+  );
 
   const { mutate: finishOrder, isPending: finishOrderIsPending, variables: finishOrderVariables } = 
     api.order.finishOrder.useMutation({
@@ -94,6 +103,7 @@ const SalesPage: NextPageWithLayout = () => {
             <OrderCard
               key={order.id}
               onFinishOrder={handleFinishOrder}
+              onViewDetails={() => setSelectedOrderId(order.id)}
               id={order.id}
               status={order.status}
               totalAmount={order.grandtotal}
@@ -105,6 +115,13 @@ const SalesPage: NextPageWithLayout = () => {
           ))}
         </div>
       </div>
+
+      <OrderDetailsSheet
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        order={selectedOrder ?? null}
+        isLoading={isLoadingDetails}
+      />
     </>
   );
 };

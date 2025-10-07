@@ -13,21 +13,21 @@ type XenditWebhookBody = {
 };
 
 const handler: NextApiHandler = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return;
 
   // Verify webhook berasal dari Xendit
   const headers = req.headers;
+
   const webhookToken = headers["x-callback-token"];
 
   if (webhookToken !== process.env.XENDIT_WEBHOOK_TOKEN) {
-    return res.status(401).json({ error: "Invalid webhook token" });
+    return res.status(401);
   }
 
   const body = req.body as XenditWebhookBody;
 
-  // Find and validate order
+  // 1. find order
+  // 2. if success, update order to success
   const order = await db.order.findUnique({
     where: {
       id: body.data.reference_id,
@@ -35,27 +35,14 @@ const handler: NextApiHandler = async (req, res) => {
   });
 
   if (!order) {
-    return res.status(404).json({ error: "Order not found" });
-  }
-
-  // Validate payment amount
-  if (body.data.amount !== order.grandtotal) {
-    return res.status(400).json({ error: "Payment amount mismatch" });
+    return res.status(404).send("Order not found");
   }
 
   if (body.data.status !== "SUCCEEDED") {
-    await db.order.update({
-      where: {
-        id: order.id,
-      },
-      data: {
-        status: "AWAITING_PAYMENT",
-      },
-    });
-    return res.status(422).json({ error: "Payment failed" });
+    // update order menjadi failed
+    return res.status(422);
   }
 
-  // Update order to processing status
   await db.order.update({
     where: {
       id: order.id,
@@ -66,7 +53,7 @@ const handler: NextApiHandler = async (req, res) => {
     },
   });
 
-  return res.status(200).json({ success: true });
+  return res.status(200);
 };
 
 export default handler;

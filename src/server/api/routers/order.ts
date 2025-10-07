@@ -229,6 +229,55 @@ export const orderRouter = createTRPCRouter({
       });
     }),
     
+    getOrderDetails: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.string().uuid(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      const order = await db.order.findUnique({
+        where: {
+          id: input.orderId,
+        },
+        include: {
+          orderItems: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order not found",
+        });
+      }
+
+      return {
+        id: order.id,
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        grandtotal: order.grandtotal,
+        items: order.orderItems.map((item) => ({
+          id: item.id,
+          productName: item.product.name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.price * item.quantity,
+        })),
+      };
+    }),
+
     getSalesReport: protectedProcedure.query(async ({ ctx }) => {
       const { db } = ctx;
 

@@ -6,12 +6,13 @@ interface OrderCardProps {
   id: string;
   totalAmount: number;
   totalItems: number;
-  status: StatusOrder
+  status: StatusOrder;
   onFinishOrder?: (orderId: string) => void;
   isFinishingOrder?: boolean;
+  onViewDetails: (orderId: string) => void;
 }
 
-export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, isFinishingOrder }: OrderCardProps) => {
+export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, isFinishingOrder, onViewDetails }: OrderCardProps) => {
   const handleFinishOrder = () => {};
 
   const getBadgeColor = () => {
@@ -26,7 +27,17 @@ export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, 
   }
 
   return (
-    <div className="rounded-lg border p-4 shadow-sm bg-card">
+    <div 
+      className="rounded-lg border p-4 shadow-sm bg-card hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => onViewDetails(id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onViewDetails(id);
+        }
+      }}
+    >
       <div className="mb-3 flex flex-col gap-4">
         <div>
           <h4 className="font-medium text-sm text-muted-foreground">Order ID</h4>

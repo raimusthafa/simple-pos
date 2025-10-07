@@ -105,6 +105,9 @@ export const CreateOrderSheet = ({
     onSuccess: () => {
       toast.success("Payment simulated successfully");
     },
+    onError: (error) => {
+      toast.error("Failed to simulate payment: " + error.message);
+    },
   });
 
 
