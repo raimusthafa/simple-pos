@@ -77,15 +77,13 @@ const DashboardPage: NextPageWithLayout = () => {
           <Button variant={"ghost"} onClick={() => handleTestToast()}>
             Test Toast
           </Button>
-          {
-            !!cartStore.items.length &&(
+
           <Button
-            className="animate-in slide-in-from-right"
             onClick={() => setOrderSheetOpen(true)}
           >
             <ShoppingCart /> Cart ({cartStore.items.length})
           </Button>
-          )}
+
         </div>
       </DashboardHeader>
 

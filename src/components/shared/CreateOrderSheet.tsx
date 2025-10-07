@@ -2,7 +2,7 @@ import { Button } from "../ui/button";
 
 import { PRODUCTS } from "@/data/mock";
 import { toRupiah } from "@/utils/toRupiah";
-import { CheckCircle2, Minus, Plus } from "lucide-react";
+import { CheckCircle2, Minus, Plus, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
@@ -178,50 +178,74 @@ export const CreateOrderSheet = ({
             </SheetDescription>
           </SheetHeader>
 
+         
+            {cartStore.items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-8">
+                <div className="bg-secondary/50 rounded-full p-3">
+                  <ShoppingCart className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div className="text-center">
+                  <p className="font-medium">Your cart is empty</p>
+                  <p className="text-muted-foreground text-sm">Add some items to your cart to create an order</p>
+                </div>
+              </div>
+            ) : (
           <div className="space-y-4 overflow-y-scroll p-4">
             <h1 className="text-xl font-medium">Order Items</h1>
-            <div className="flex flex-col gap-6">
-              {
-                cartStore.items.map(item => {
+              <div className="flex flex-col gap-6">
+                {cartStore.items.map(item => {
                   return (
                     <OrderItem 
-                    key={item.productId}
-                    id={item.productId}
-                    name={item.name}
-                    price={item.price}
-                    quantity={item.quantity}
-                    imageUrl={item.imageUrl}
+                      key={item.productId}
+                      id={item.productId}
+                      name={item.name}
+                      price={item.price}
+                      quantity={item.quantity}
+                      imageUrl={item.imageUrl}
                     />
                   );
-                })
-              }
-            </div>
+                })}
+              </div>
           </div>
+            )}
 
-          <SheetFooter>
-            <h3 className="text-lg font-medium">Payment Details</h3>
+          <SheetFooter className="flex flex-col gap-4">
+            {cartStore.items.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-4">
+                <Button
+                  size="lg"
+                  className="mt-4 w-full"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-medium">Payment Details</h3>
 
-            <div className="grid grid-cols-2 gap-2">
-              <p>Subtotal</p>
-              <p className="place-self-end">{toRupiah(subtotal)}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <p>Subtotal</p>
+                  <p className="place-self-end">{toRupiah(subtotal)}</p>
 
-              <p>Tax</p>
-              <p className="place-self-end">{toRupiah(tax)}</p>
+                  <p>Tax</p>
+                  <p className="place-self-end">{toRupiah(tax)}</p>
 
-              <Separator className="col-span-2" />
+                  <Separator className="col-span-2" />
 
-              <p>Total</p>
+                  <p>Total</p>
+                  <p className="place-self-end">{toRupiah(grandTotal)}</p>
+                </div>
 
-              <p className="place-self-end">{toRupiah(grandTotal)}</p>
-            </div>
-
-            <Button
-              size="lg"
-              className="mt-8 w-full"
-              onClick={handleCreateOrder}
-            >
-              Create Order
-            </Button>
+                <Button
+                  size="lg"
+                  className="mt-4 w-full"
+                  onClick={handleCreateOrder}
+                >
+                  Create Order
+                </Button>
+              </>
+            )}
           </SheetFooter>
         </SheetContent>
       </Sheet>
