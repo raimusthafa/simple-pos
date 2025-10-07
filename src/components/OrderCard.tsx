@@ -28,16 +28,16 @@ export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, 
 
   return (
     <div 
-      className="rounded-lg border p-4 shadow-sm bg-card hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => onViewDetails(id)}
+      className="rounded-lg border p-4 shadow-sm bg-card hover:shadow-md transition-shadow cursor-pointer">
+        <div
+              onClick={() => onViewDetails(id)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           onViewDetails(id);
         }
-      }}
-    >
+      }}>
       <div className="mb-3 flex flex-col gap-4">
         <div>
           <h4 className="font-medium text-sm text-muted-foreground">Order ID</h4>
@@ -57,6 +57,7 @@ export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, 
           <h4 className="font-medium text-sm text-muted-foreground">Total Items</h4>
           <p className="text-lg font-bold">{totalItems}</p>
         </div>
+      </div>
       </div>
 
       {status === StatusOrder.PROCESSING && (

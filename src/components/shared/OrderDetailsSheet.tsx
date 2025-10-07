@@ -52,7 +52,7 @@ export const OrderDetailsSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className="w-full sm:max-w-lg px-6">
         <SheetHeader className="mb-6">
           <SheetTitle>Order Details</SheetTitle>
           <SheetDescription>View the complete order information</SheetDescription>
