@@ -4,7 +4,7 @@ import {
   DashboardLayout,
   DashboardTitle,
 } from "@/components/layouts/DashboardLayout";
-import { CategoryFilterCard } from "@/components/shared/category/CategoryFilterCard";
+import { CategoryScroll } from "@/components/shared/category/CategoryScroll";
 import { CreateOrderSheet } from "@/components/shared/CreateOrderSheet";
 import { ProductMenuCard } from "@/components/shared/product/ProductMenuCard";
 import { Input } from "@/components/ui/input";
@@ -100,28 +100,13 @@ const DashboardPage: NextPageWithLayout = () => {
           />
         </div>
 
-        <div className="flex space-x-4 overflow-x-auto pb-2">
-          <CategoryFilterCard
-          key={"all"}
-          name={"All"}
-          isSelected={selectedCategory === "all"}
-          onClick={() => handleCategoryClick("all")}
-          productCount={totalProduct ?? 0}
-          />
-          {categories?.map((category) => {
-            return (
-              <CategoryFilterCard
-              key={category.id}
-              name={category.name}
-              isSelected={category.id === selectedCategory}
-              onClick={() => handleCategoryClick(category.id)}
-              productCount={category._count.products}
-              />
-            )
-          })}
-        </div>
-
-        <div>            
+        <CategoryScroll
+          categories={categories}
+          selectedCategory={selectedCategory}
+          handleCategoryClick={handleCategoryClick}
+          totalProduct={totalProduct}
+        />
+       <div>            
           {productIsLoading ? (
         <div className="rounded-md border p-8 text-center">
           <p className="text-muted-foreground">Loading...</p>
