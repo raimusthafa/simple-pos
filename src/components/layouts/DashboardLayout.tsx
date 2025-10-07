@@ -1,6 +1,16 @@
-import { BarChart3, Grid3X3, Package, ShoppingCart, Sun } from "lucide-react";
+import {
+  BarChart3,
+  Grid3X3,
+  Package,
+  ShoppingCart,
+  Sun,
+  Moon,
+  Sparkles,
+} from "lucide-react";
 import React, { type ReactNode } from "react";
-
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useTheme } from "next-themes";
 import {
   Sidebar,
   SidebarContent,
@@ -12,76 +22,89 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 
-// Dashboard header component
-interface DashboardHeaderProps {
-  children: ReactNode;
-  className?: string;
-}
+// ------------------ Small Header Components ------------------
 
 export const DashboardHeader = ({
   children,
   className = "",
-}: DashboardHeaderProps) => {
-  return <header className={`mb-6 space-y-2 ${className}`}>{children}</header>;
-};
-
-// Dashboard title component
-interface DashboardTitleProps {
+}: {
   children: ReactNode;
   className?: string;
-}
+}) => (
+  <header className={`mb-6 space-y-2 ${className}`}>{children}</header>
+);
 
 export const DashboardTitle = ({
   children,
   className = "",
-}: DashboardTitleProps) => {
-  return (
-    <h1 className={`text-2xl font-bold tracking-tight ${className}`}>
-      {children}
-    </h1>
-  );
-};
-
-// Dashboard description component
-interface DashboardDescriptionProps {
+}: {
   children: ReactNode;
   className?: string;
-}
+}) => (
+  <h1 className={`text-2xl font-bold tracking-tight ${className}`}>
+    {children}
+  </h1>
+);
 
 export const DashboardDescription = ({
   children,
   className = "",
-}: DashboardDescriptionProps) => {
-  return <p className={`text-muted-foreground ${className}`}>{children}</p>;
-};
-
-// Main dashboard layout component
-interface DashboardLayoutProps {
+}: {
   children: ReactNode;
-}
+  className?: string;
+}) => (
+  <p className={`text-muted-foreground ${className}`}>{children}</p>
+);
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+// ------------------ Main Layout ------------------
+
+export const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
-
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const menuItems = [
+    // {
+    //   icon: ShoppingCart,
+    //   label: "Create Order",
+    //   href: "/dashboard",
+    // },
+    {
+      icon: Grid3X3,
+      label: "Category Management",
+      href: "/categories",
+    },
+    {
+      icon: Package,
+      label: "Product Management",
+      href: "/products",
+    },
+    {
+      icon: BarChart3,
+      label: "Sales Dashboard",
+      href: "/sales",
+    },
+  ];
+
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full">
-        <Sidebar>
-          <SidebarHeader className="p-4">
-            <h2 className="text-xl font-bold">Simple POS</h2>
+      <div className="flex h-screen w-full bg-gradient-to-br from-background via-background to-muted/30">
+        {/* SIDEBAR */}
+        <Sidebar className="border-r bg-gradient-to-b from-white/90 to-gray-50 dark:from-gray-900/90 dark:to-gray-950/90 backdrop-blur-md shadow-sm">
+          {/* Header */}
+          <SidebarHeader className="flex items-center gap-2 p-4 border-b border-border/50">
+            <Sparkles className="text-primary h-6 w-6" />
+            <h2 className="text-lg font-semibold tracking-tight">Simple POS</h2>
           </SidebarHeader>
-          <SidebarContent className="px-4">
+          
+
+          {/* Menu */}
+          <SidebarContent className="px-3 py-4 space-y-1">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -95,62 +118,61 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </SidebarMenu>
 
-            <SidebarSeparator className="my-2" />
-
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Category Management"
-                  isActive={router.pathname.includes("/categories")}
-                >
-                  <Link href="/categories">
-                    <Grid3X3 className="mr-2 h-4 w-4" />
-                    Category Management
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Product Management"
-                  isActive={router.pathname.includes("/products")}
-                >
-                  <Link href="/products">
-                    <Package className="mr-2 h-4 w-4" />
-                    Product Management
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Sales Dashboard"
-                  isActive={router.pathname.includes("/sales")}
-                >
-                  <Link href="/sales">
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    Sales Dashboard
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+          <SidebarSeparator className="my-2" />
+              {menuItems.map(({ icon: Icon, label, href }) => {
+                const isActive = router.pathname.includes(href);
+                return (
+                  <SidebarMenuItem key={href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={label}
+                      className={`group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                        isActive
+                          ? "bg-primary/10 text-primary border border-primary/20"
+                          : "text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                      }`}
+                    >
+                      <Link href={href}>
+                        <Icon className="mr-2 h-4 w-4 transition-transform" />
+                        {label}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarContent>
-          {/* <SidebarFooter className="p-4">
-            <p className="text-muted-foreground text-xs">Simple POS v1.0</p>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={toggleTheme}>
-                {theme === "dark" ? "Dark Mode" : "Light Mode"}
-              </Button>
-            </div>
-          </SidebarFooter> */}
+
+          {/* Footer */}
+          <SidebarFooter className="p-4 border-t border-border/50 mt-auto flex flex-col gap-3">
+            {/* <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="flex items-center justify-center gap-2"
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="w-4 h-4" /> Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4" /> Dark Mode
+                </>
+              )}
+            </Button> */}
+            <p className="text-xs text-muted-foreground text-center">
+              Simple POS <span className="text-foreground/80">v1.0</span>
+            </p>
+          </SidebarFooter>
         </Sidebar>
 
-        <main className="relative flex-1 overflow-auto p-6">{children}</main>
+        {/* MAIN CONTENT */}
+        <main className="relative flex-1 overflow-auto p-6">
+          {children}
+        </main>
       </div>
     </SidebarProvider>
   );
