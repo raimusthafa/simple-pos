@@ -268,12 +268,14 @@ export const orderRouter = createTRPCRouter({
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
         grandtotal: order.grandtotal,
+        tax: order.tax,
         items: order.orderItems.map((item) => ({
           id: item.id,
           productName: item.product.name,
           quantity: item.quantity,
           price: item.price,
           subtotal: item.price * item.quantity,
+          
         })),
       };
     }),

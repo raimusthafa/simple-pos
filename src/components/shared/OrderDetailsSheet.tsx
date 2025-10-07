@@ -27,6 +27,7 @@ interface OrderDetailsSheetProps {
     createdAt: Date;
     updatedAt: Date;
     grandtotal: number;
+    tax: number;
     items: OrderItem[];
   } | null;
   isLoading?: boolean;
@@ -52,13 +53,13 @@ export const OrderDetailsSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-lg px-6">
+      <SheetContent className="w-full">
         <SheetHeader className="mb-6">
           <SheetTitle>Order Details</SheetTitle>
           <SheetDescription>View the complete order information</SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 px-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-[200px]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -124,6 +125,10 @@ export const OrderDetailsSheet = ({
                       <p className="font-medium">{toRupiah(item.subtotal)}</p>
                     </div>
                   ))}
+                 <div className="flex justify-between items-center">
+                    <p className="text-sm font-medium mb-2">Tax</p>
+                    <p className="font-medium">{toRupiah(order.tax)}</p>
+                  </div>
                   <div className="flex justify-between items-center pt-2">
                     <p className="font-bold">Total</p>
                     <p className="font-bold">{toRupiah(order.grandtotal)}</p>
@@ -133,7 +138,7 @@ export const OrderDetailsSheet = ({
             </>
           )}
 
-          <Button className="w-full" variant="outline" onClick={onClose}>
+          <Button className="w-full" variant="destructive" onClick={onClose}>
             Close
           </Button>
         </div>
