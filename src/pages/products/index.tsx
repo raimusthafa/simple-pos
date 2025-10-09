@@ -75,7 +75,7 @@ const ProductsPage: NextPageWithLayout = () => {
       <DashboardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <DashboardTitle>Product Management</DashboardTitle>
+            <DashboardTitle>Product Managements</DashboardTitle>
             <DashboardDescription>
               View, add, edit, and delete products in your inventory.
             </DashboardDescription>
