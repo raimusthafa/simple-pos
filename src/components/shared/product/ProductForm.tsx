@@ -9,9 +9,10 @@ import type { productFormSchema } from "@/forms/product";
 import { uploadFileToSignedUrl } from "@/lib/supabase";
 import { Bucket } from "@/server/bucket";
 import { api } from "@/utils/api";
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type DragEvent } from "react";
 import { useFormContext } from "react-hook-form"
 import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 
 type ProductFormProps = {
     onSubmit: (values: productFormSchema) => void;
@@ -29,35 +30,87 @@ export const ProductForm = ({
     const form = useFormContext<productFormSchema>();
 
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isImageLoading, setIsImageLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const { data: categories } = api.category.getCategories.useQuery();
     const { mutateAsync: createImageSignedUrl } = api.product.createProductImageUploadSignedUrl.useMutation();
 
     useEffect(() => {
         if (defaultImageUrl) {
             setIsImageLoading(true);
+            setPreviewUrl(null);
         }
     }, [defaultImageUrl]);
 
+    const uploadImage = async (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            toast.error("Please upload an image file");
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const localPreview = URL.createObjectURL(file);
+            setPreviewUrl(localPreview);
+
+            const { token, path } = await createImageSignedUrl();
+            const imageUrl = await uploadFileToSignedUrl({
+                bucket: Bucket.ProductImages,
+                file,
+                path,
+                token,
+            });
+
+            setUploadedImageUrl(imageUrl);
+            onChangeImageUrl(imageUrl);
+            toast.success("Image uploaded successfully!");
+        } catch (error) {
+            toast.error("Failed to upload image");
+            setPreviewUrl(null);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
+        const files = e.target.files;
+        if (files && files?.length > 0) {
+            const file = files[0];
+            if (file) {
+                await uploadImage(file);
+            }
+        }
+    };
 
-      if (files && files?.length > 0) {
-        const file = files[0];
+    const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
 
-        if (!file) return;
+    const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
 
-        const { token, path } = await createImageSignedUrl();
-        const imageUrl = await uploadFileToSignedUrl({
-          bucket: Bucket.ProductImages,
-          file,
-          path,
-          token,
-        });
+    const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
 
-        onChangeImageUrl(imageUrl);
-        toast.info ("Uploaded Image!")
-      }
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file) {
+                await uploadImage(file);
+            }
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setUploadedImageUrl(null);
+        setPreviewUrl(null);
+        onChangeImageUrl("");
     };  
 
     return(
@@ -121,20 +174,63 @@ export const ProductForm = ({
       />
       <div className="space-y-2">
         <Label>Product Image</Label>
-         {isImageLoading && (
-          <Skeleton className="relative h-40 w-full overflow-hidden rounded-md"/>
+        
+        {(previewUrl || uploadedImageUrl || defaultImageUrl) ? (
+          <div className="relative h-48 w-full overflow-hidden rounded-lg border-2 border-dashed border-gray-300">
+            {isImageLoading && !previewUrl && (
+              <Skeleton className="absolute inset-0"/>
             )}
-        {(defaultImageUrl || uploadedImageUrl) && (
-          <div className="relative h-40 w-full overflow-hidden rounded-md">
             <img
-              src={uploadedImageUrl || defaultImageUrl}
-              alt="Product"
-              className={`object-cover w-full h-full ${isImageLoading ? 'invisible' : 'visible'}`}
+              src={previewUrl || uploadedImageUrl || defaultImageUrl}
+              alt="Product preview"
+              className={`object-cover w-full h-full ${isImageLoading && !previewUrl ? 'invisible' : 'visible'}`}
               onLoad={() => setIsImageLoading(false)}
             />
+            {isUploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <Spinner className="h-8 w-8 text-white" />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative h-48 w-full rounded-lg border-2 border-dashed transition-colors cursor-pointer ${
+              isDragging 
+                ? 'border-primary bg-primary/5' 
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isUploading}
+            />
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <Upload className={`h-12 w-12 mb-2 ${isDragging ? 'text-primary' : ''}`} />
+              <p className="text-sm font-medium">
+                {isDragging ? 'Drop image here' : 'Drag & drop or click to upload'}
+              </p>
+              <p className="text-xs mt-1">PNG, JPG, GIF up to 10MB</p>
+            </div>
+            {isUploading && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                <Spinner className="h-8 w-8" />
+              </div>
+            )}
           </div>
         )}
-        <Input onChange={handleImageChange} type="file" accept="image/*"/>
       </div>
       {submitButton}
         </form>
