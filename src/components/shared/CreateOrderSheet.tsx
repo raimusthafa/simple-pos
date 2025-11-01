@@ -9,7 +9,10 @@ import {
   AlertDialog,
   AlertDialogCancel,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { Separator } from "../ui/separator";
 import {
@@ -252,8 +255,13 @@ export const CreateOrderSheet = ({
 
       <AlertDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
         <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Finish Payment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Scan the QR code or simulate payment to complete the order
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <div className="flex flex-col items-center justify-center gap-4">
-            <p className="text-lg font-medium">Finish Payment</p>
 
             {paymentInfoLoading ? (
               <div className="flex flex-col items-center justify-center gap-2">
