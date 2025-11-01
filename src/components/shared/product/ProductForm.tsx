@@ -34,6 +34,7 @@ export const ProductForm = ({
     const [isImageLoading, setIsImageLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [isImageRemoved, setIsImageRemoved] = useState(false);
     const { data: categories } = api.category.getCategories.useQuery();
     const { mutateAsync: createImageSignedUrl } = api.product.createProductImageUploadSignedUrl.useMutation();
 
@@ -41,6 +42,7 @@ export const ProductForm = ({
         if (defaultImageUrl) {
             setIsImageLoading(true);
             setPreviewUrl(null);
+            setIsImageRemoved(false);
         }
     }, [defaultImageUrl]);
 
@@ -54,6 +56,7 @@ export const ProductForm = ({
         try {
             const localPreview = URL.createObjectURL(file);
             setPreviewUrl(localPreview);
+            setIsImageRemoved(false);
 
             const { token, path } = await createImageSignedUrl();
             const imageUrl = await uploadFileToSignedUrl({
@@ -108,8 +111,13 @@ export const ProductForm = ({
     };
 
     const handleRemoveImage = () => {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+        }
         setUploadedImageUrl(null);
         setPreviewUrl(null);
+        setIsImageRemoved(true);
+        setIsImageLoading(true);
         onChangeImageUrl("");
     };  
 
@@ -175,7 +183,7 @@ export const ProductForm = ({
       <div className="space-y-2">
         <Label>Product Image</Label>
         
-        {(previewUrl || uploadedImageUrl || defaultImageUrl) ? (
+        {(previewUrl || uploadedImageUrl || (defaultImageUrl && !isImageRemoved)) ? (
           <div className="relative h-48 w-full overflow-hidden rounded-lg border-2 border-dashed border-gray-300">
             {isImageLoading && !previewUrl && (
               <Skeleton className="absolute inset-0"/>
@@ -194,7 +202,8 @@ export const ProductForm = ({
             <button
               type="button"
               onClick={handleRemoveImage}
-              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-md z-10"
+              title="Remove image"
             >
               <X className="h-4 w-4" />
             </button>
