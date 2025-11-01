@@ -39,11 +39,11 @@ const DashboardPage: NextPageWithLayout = () => {
     setSelectedCategory(categoryId);
   };
 
-  const handleTestToast = () => {
-    toast.success("This is a success toast!");
-    toast.info("This is a info toast!");
-    toast.error("This is a error toast!");
-  }
+  // const handleTestToast = () => {
+  //   toast.success("This is a success toast!");
+  //   toast.info("This is a info toast!");
+  //   toast.error("This is a error toast!");
+  // }
 
   const handleAddToCart = (productId: string) => {
     const productToAdd = products?.find((product) => product.id === productId);
@@ -74,9 +74,9 @@ const DashboardPage: NextPageWithLayout = () => {
             </DashboardDescription>
             </div>
           </div>
-          <Button variant={"ghost"} onClick={() => handleTestToast()}>
+          {/* <Button variant={"ghost"} onClick={() => handleTestToast()}>
             Test Toast
-          </Button>
+          </Button> */}
 
           <Button
             onClick={() => setOrderSheetOpen(true)}
