@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { PRODUCTS } from "@/data/mock";
 import { ProductMenuCard } from "@/components/shared/product/ProductMenuCard";
 import { ProductCatalogCard } from "@/components/shared/product/ProductCatalogCard";
+import { ProductDetailSheet } from "@/components/shared/product/ProductDetailSheet";
 import { api } from "@/utils/api";
-import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ProductForm } from "@/components/shared/product/ProductForm";
 import { EditProductDialog } from "@/components/shared/product/EditProductDialog";
 import { Form } from "@/components/ui/form";
@@ -21,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 const ProductsPage: NextPageWithLayout = () => {
-
   const apiUtils = api.useUtils();
 
   const [uploadImage, setUploadImage] = useState <string| null> (null);
@@ -29,6 +29,7 @@ const ProductsPage: NextPageWithLayout = () => {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
   const { data: products, isLoading } = api.product.getproduct.useQuery({
     categoryId: "all",
@@ -126,6 +127,10 @@ const ProductsPage: NextPageWithLayout = () => {
             price={product.price}
             image={product.imageUrl ?? ""}
             category={product.category.name}
+            onClick={() => {
+              setSelectedProduct(product.id);
+              setDetailSheetOpen(true);
+            }}
             onEdit={() => {
               setSelectedProduct(product.id);
               setEditDialogOpen(true);
@@ -143,10 +148,10 @@ const ProductsPage: NextPageWithLayout = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
-            <p className="text-muted-foreground text-sm">
+            <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the product
               from your inventory.
-            </p>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -164,6 +169,12 @@ const ProductsPage: NextPageWithLayout = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProductDetailSheet
+        open={detailSheetOpen}
+        onOpenChange={setDetailSheetOpen}
+        productId={selectedProduct}
+      />
 
       <EditProductDialog 
         open={editDialogOpen}
