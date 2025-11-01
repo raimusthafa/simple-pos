@@ -13,6 +13,7 @@ export interface ProductCatalogCardProps {
   category: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onClick?: () => void;
   className?: string;
 }
 
@@ -23,11 +24,15 @@ export const ProductCatalogCard: React.FC<ProductCatalogCardProps> = ({
   category,
   onEdit,
   onDelete,
+  onClick,
   className,
 }) => {
   return (
     <Card className={cn("pt-0 overflow-hidden", className)}>
-      <div className="relative h-48 w-full overflow-hidden">
+      <div 
+        className="relative h-48 w-full overflow-hidden cursor-pointer"
+        onClick={onClick}
+      >
         {image ? (
           <Image
             src={image}
@@ -43,7 +48,7 @@ export const ProductCatalogCard: React.FC<ProductCatalogCardProps> = ({
         )}
       </div>
 
-      <CardContent>
+      <CardContent className="cursor-pointer" onClick={onClick}>
         <div className="mb-1 text-lg font-medium">{name}</div>
         <div className="text-primary text-xl font-semibold">
           {toRupiah(price)}
@@ -54,14 +59,25 @@ export const ProductCatalogCard: React.FC<ProductCatalogCardProps> = ({
       </CardContent>
 
       <CardFooter className="flex items-center justify-center gap-2">
-        <Button className="flex-1" variant="outline" size="sm" onClick={onEdit}>
+        <Button 
+          className="flex-1" 
+          variant="outline" 
+          size="sm" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit?.();
+          }}
+        >
           <Pencil className="mr-2 h-4 w-4" />
         </Button>
         <Button
           className="flex-1"
           variant="destructive"
           size="sm"
-          onClick={onDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.();
+          }}
         >
           <Trash className="mr-2 h-4 w-4" />
         </Button>
