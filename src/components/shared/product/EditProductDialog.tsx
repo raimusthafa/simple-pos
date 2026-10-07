@@ -60,7 +60,7 @@ export const EditProductDialog = ({ open, onOpenChange, productId }: EditProduct
       name: values.name,
       price: values.price,
       categoryId: values.categoryId,
-      imageUrl: form.getValues("imageUrl") || (product?.imageUrl ?? undefined),
+      imageUrl: form.getValues("imageUrl") ?? (product?.imageUrl ?? undefined),
     });
   };
 
@@ -77,7 +77,7 @@ export const EditProductDialog = ({ open, onOpenChange, productId }: EditProduct
             onChangeImageUrl={(imageUrl) => {
               form.setValue("imageUrl", imageUrl);
             }}
-            defaultImageUrl={product?.imageUrl || undefined}
+            defaultImageUrl={product?.imageUrl ?? undefined}
           />
         </Form>
 

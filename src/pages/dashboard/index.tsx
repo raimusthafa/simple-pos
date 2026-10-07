@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   DashboardDescription,
   DashboardHeader,
@@ -120,7 +121,7 @@ const DashboardPage: NextPageWithLayout = () => {
                 </EmptyHeader>
                 <EmptyContent>
                   <Button asChild>
-                    <a href="/products">Add Product</a>
+                    <Link href="/products">Add Product</Link>
                   </Button>
                 </EmptyContent>
               </Empty>

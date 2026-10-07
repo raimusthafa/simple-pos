@@ -189,7 +189,7 @@ export const ProductForm = ({
               <Skeleton className="absolute inset-0"/>
             )}
             <img
-              src={previewUrl || uploadedImageUrl || defaultImageUrl}
+              src={previewUrl ?? uploadedImageUrl ?? defaultImageUrl ?? ""}
               alt="Product preview"
               className={`object-cover w-full h-full ${isImageLoading && !previewUrl ? 'invisible' : 'visible'}`}
               onLoad={() => setIsImageLoading(false)}

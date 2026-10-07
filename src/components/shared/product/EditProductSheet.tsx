@@ -61,7 +61,7 @@ export const EditProductSheet = ({ open, onOpenChange, productId }: EditProductS
       price: values.price,
       categoryId: values.categoryId,
       // If there's a new image uploaded, use it, otherwise keep existing
-      imageUrl: form.getValues("imageUrl") || product?.imageUrl || undefined,
+      imageUrl: form.getValues("imageUrl") ?? product?.imageUrl ?? undefined,
     });
   };
 
@@ -79,7 +79,7 @@ export const EditProductSheet = ({ open, onOpenChange, productId }: EditProductS
               onChangeImageUrl={(imageUrl) => {
                 form.setValue("imageUrl", imageUrl);
               }}
-              defaultImageUrl={product?.imageUrl || undefined}
+              defaultImageUrl={product?.imageUrl ?? undefined}
               submitButton={
                 <Button 
                   type="submit" 

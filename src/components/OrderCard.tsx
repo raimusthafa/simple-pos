@@ -13,8 +13,6 @@ interface OrderCardProps {
 }
 
 export const OrderCard = ({ id, status, totalAmount, totalItems, onFinishOrder, isFinishingOrder, onViewDetails }: OrderCardProps) => {
-  const handleFinishOrder = () => {};
-
   const getBadgeColor = () => {
     switch (status) {
       case StatusOrder.AWAITING_PAYMENT:
