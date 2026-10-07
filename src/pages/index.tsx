@@ -166,7 +166,7 @@ export default function LandingPage() {
                       <div className="w-4 h-4 rounded bg-[oklch(0.83_0.13_160.91)]/40" />
                       <div className="h-3 w-16 rounded bg-[oklch(0.83_0.13_160.91)]/60" />
                     </div>
-                    {[...Array(5)].map((_, i) => (
+                    {[0, 1, 2, 3, 4].map((i) => (
                       <div
                         key={i}
                         className="h-8 rounded-lg bg-[oklch(0.90_0_0)] flex items-center px-3 gap-2"
